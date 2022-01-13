@@ -43,21 +43,24 @@ namespace XInputDotNetPure
                 coefficient = coefficient > 0.0f ? coefficient / distanceFromCenter : 0.0f;
                 return new GamePadThumbSticks.StickValue(
                     Clamp(valueX * coefficient),
-                    Clamp(valueY * coefficient)
+                    Clamp(valueY * coefficient),
+                    valueX, valueY
                 );
             }
             else if (deadZoneMode == GamePadDeadZone.IndependentAxes)
             {
                 return new GamePadThumbSticks.StickValue(
                     ApplyDeadZone(valueX, short.MaxValue, deadZoneSize),
-                    ApplyDeadZone(valueY, short.MaxValue, deadZoneSize)
+                    ApplyDeadZone(valueY, short.MaxValue, deadZoneSize),
+                    valueX, valueY
                 );
             }
             else
             {
                 return new GamePadThumbSticks.StickValue(
                     ApplyDeadZone(valueX, short.MaxValue, 0.0f),
-                    ApplyDeadZone(valueY, short.MaxValue, 0.0f)
+                    ApplyDeadZone(valueY, short.MaxValue, 0.0f), 
+                    valueX, valueY
                 );
             }
         }

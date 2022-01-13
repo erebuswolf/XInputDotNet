@@ -134,11 +134,14 @@ namespace XInputDotNetPure
         public struct StickValue
         {
             float x, y;
+            short xraw, yraw;
 
-            internal StickValue(float x, float y)
+            internal StickValue(float x, float y, short xraw = 0, short yraw = 0)
             {
                 this.x = x;
                 this.y = y;
+                this.xraw = xraw;
+                this.yraw = yraw;
             }
 
             public float X
@@ -149,6 +152,12 @@ namespace XInputDotNetPure
             public float Y
             {
                 get { return y; }
+            }
+            public short XRaw {
+                get { return xraw; }
+            }
+            public short YRaw {
+                get { return yraw; }
             }
         }
 
@@ -175,11 +184,15 @@ namespace XInputDotNetPure
     {
         float left;
         float right;
+        byte leftRaw;
+        byte rightRaw;
 
-        internal GamePadTriggers(float left, float right)
+        internal GamePadTriggers(float left, float right, byte leftRaw = 0, byte rightRaw =0)
         {
             this.left = left;
             this.right = right;
+            this.leftRaw = leftRaw;
+            this.rightRaw = rightRaw;
         }
 
         public float Left
@@ -190,6 +203,14 @@ namespace XInputDotNetPure
         public float Right
         {
             get { return right; }
+        }
+
+        public byte LeftRaw {
+            get { return leftRaw; }
+        }
+
+        public byte RightRaw {
+            get { return rightRaw; }
         }
     }
 
@@ -283,7 +304,9 @@ namespace XInputDotNetPure
             );
             triggers = new GamePadTriggers(
                 Utils.ApplyTriggerDeadZone(rawState.Gamepad.bLeftTrigger, deadZone),
-                Utils.ApplyTriggerDeadZone(rawState.Gamepad.bRightTrigger, deadZone)
+                Utils.ApplyTriggerDeadZone(rawState.Gamepad.bRightTrigger, deadZone),
+                rawState.Gamepad.bLeftTrigger,
+                rawState.Gamepad.bRightTrigger
             );
         }
 
