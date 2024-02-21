@@ -217,7 +217,7 @@ namespace XInputDotNetPure
     public struct GamePadState
     {
         [StructLayout(LayoutKind.Sequential)]
-        internal struct RawState
+        public struct RawState
         {
             public uint dwPacketNumber;
             public GamePad Gamepad;
@@ -241,6 +241,7 @@ namespace XInputDotNetPure
         GamePadDPad dPad;
         GamePadThumbSticks thumbSticks;
         GamePadTriggers triggers;
+        RawState rawState;
 
         enum ButtonsConstants
         {
@@ -260,9 +261,47 @@ namespace XInputDotNetPure
             X = 0x4000,
             Y = 0x8000
         }
+        public GamePadState(RawState rawState) {
+            this.rawState = rawState;
+            this.isConnected = false;
+            GamePadDeadZone deadZone = GamePadDeadZone.IndependentAxes;
+
+            packetNumber = rawState.dwPacketNumber;
+            buttons = new GamePadButtons(
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.Start) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.Back) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.LeftThumb) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.RightThumb) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.LeftShoulder) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.RightShoulder) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.Guide) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.A) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.B) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.X) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.Y) != 0 ? ButtonState.Pressed : ButtonState.Released
+            );
+            dPad = new GamePadDPad(
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.DPadUp) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.DPadDown) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.DPadLeft) != 0 ? ButtonState.Pressed : ButtonState.Released,
+                (rawState.Gamepad.wButtons & (uint)ButtonsConstants.DPadRight) != 0 ? ButtonState.Pressed : ButtonState.Released
+            );
+
+            thumbSticks = new GamePadThumbSticks(
+                Utils.ApplyLeftStickDeadZone(rawState.Gamepad.sThumbLX, rawState.Gamepad.sThumbLY, deadZone),
+                Utils.ApplyRightStickDeadZone(rawState.Gamepad.sThumbRX, rawState.Gamepad.sThumbRY, deadZone)
+            );
+            triggers = new GamePadTriggers(
+                Utils.ApplyTriggerDeadZone(rawState.Gamepad.bLeftTrigger, deadZone),
+                Utils.ApplyTriggerDeadZone(rawState.Gamepad.bRightTrigger, deadZone),
+                rawState.Gamepad.bLeftTrigger,
+                rawState.Gamepad.bRightTrigger
+            );
+        }
 
         internal GamePadState(bool isConnected, RawState rawState, GamePadDeadZone deadZone)
         {
+            this.rawState = rawState;
             this.isConnected = isConnected;
 
             if (!isConnected)
@@ -328,6 +367,11 @@ namespace XInputDotNetPure
         public GamePadDPad DPad
         {
             get { return dPad; }
+        }
+
+        public RawState GetRawState
+        {
+            get { return rawState; }
         }
 
         public GamePadTriggers Triggers
